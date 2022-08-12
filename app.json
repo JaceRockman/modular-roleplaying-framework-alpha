@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "hello-world",
+    "name": "Modular Roleplaying Framework",
     "slug": "reagent-expo",
     "privacy": "public",
     "platforms": [
@@ -9,7 +9,7 @@
       "web"
     ],
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
@@ -23,7 +23,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "avisindustries.mrfalpha"
+    },
+    "android": {
+      "package": "avisindustries.mrfalpha"
     }
   }
 }

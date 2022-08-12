@@ -1,4 +1,4 @@
-(ns expo.root
+(ns main.expo.root
   (:require
    ["expo" :as expo]
    ["create-react-class" :as crc]))
