@@ -1,9 +1,9 @@
 (ns main.rules-section.views
   (:require
    ["react-native" :as rn]
-   [main.helpers :as helpers :refer [<sub title-case]]
-   [main.widgets :as widgets :refer [domain-icons text-section]]
-   [main.rules-section.data :refer [stats skill-checks-details encounters damage conditions]]))
+   [main.helpers :as helpers :refer [<sub >evt title-case]]
+   [main.widgets :as widgets :refer [button domain-icons text-section]]
+   [main.db :as db :refer [app-db]]))
 
 (defn flow-tab
   []
@@ -31,20 +31,20 @@
   []
   [:> rn/View {:style {:align-items :center :justify-content :center}}
    [:> rn/Text {:style {:color :white :font-size 30}} "Stats"]
-   (let [stat-names (<sub [:moderate-stats 0])]
+   (let [stats (<sub [:moderate-stats 0])]
      [:> rn/View {:style {:align-items "center" :justify-content "center"}}
       [:> rn/View {:style {:flex-direction :row :align-items "center" :justify-content "center"}}
-       (:physical domain-icons) (map #(apply stat-info %) (map vals (:physical stat-names))) [:> rn/View {:style {:width 50}}]]
+       (:physical domain-icons) (map #(apply stat-info %) (map vals (:physical stats))) [:> rn/View {:style {:width 50}}]]
       [:> rn/View {:style {:flex-direction :row :align-items "center" :justify-content "center"}}
-       (:spiritual domain-icons) (map #(apply stat-info %) (map vals (:spiritual stat-names))) [:> rn/View {:style {:width 50}}]]
+       (:spiritual domain-icons) (map #(apply stat-info %) (map vals (:spiritual stats))) [:> rn/View {:style {:width 50}}]]
       [:> rn/View {:style {:flex-direction :row :align-items "center" :justify-content "center"}}
-       (:mental domain-icons) (map #(apply stat-info %) (map vals (:mental stat-names))) [:> rn/View {:style {:width 50}}]]
+       (:mental domain-icons) (map #(apply stat-info %) (map vals (:mental stats))) [:> rn/View {:style {:width 50}}]]
       [:> rn/View {:style {:flex-direction :row :align-items "center" :justify-content "center"}}
-       (:social domain-icons) (map #(apply stat-info %) (map vals (:social stat-names))) [:> rn/View {:style {:width 50}}]]
+       (:social domain-icons) (map #(apply stat-info %) (map vals (:social stats))) [:> rn/View {:style {:width 50}}]]
       (let [{:keys [coordination reflexes endurance
                     exertion instinct perseverance
                     concentration recognition comprehension
-                    persuasion insight connections]} stats]
+                    persuasion insight connections]} (<sub [:stat-info])]
         [:> rn/View {:style {:justify-content :center}}
          (header "Coordination") (body coordination)
          (header "Reflexes") (body reflexes)
@@ -63,25 +63,25 @@
   []
   [:> rn/View {:style {:flex-direction :column :align-items :center}}
    [:> rn/Text {:style {:color :white :font-size 30}} "Checks"]
-   (text-section (map #(get % :header) (vals skill-checks-details))
-                 (map #(get % :body) (vals skill-checks-details))
-                 (map #(get % :example) (vals skill-checks-details)))])
+   (text-section (map #(get % :header) (vals (<sub [:checks])))
+                 (map #(get % :body) (vals (<sub [:checks])))
+                 (map #(get % :example) (vals (<sub [:checks]))))])
 
 (defn encounters-tab
   []
   [:> rn/View {:style {:flex-direction :column :align-items :center}}
    [:> rn/Text {:style {:color :white :font-size 30}} "Encounters"]
-   (text-section (map #(get % :header) (vals encounters)) 
-                 (map #(get % :body) (vals encounters))
-                 (map #(get % :example) (vals encounters)))])
+   (text-section (map #(get % :header) (vals (<sub [:encounters]))) 
+                 (map #(get % :body) (vals (<sub [:encounters])))
+                 (map #(get % :example) (vals (<sub [:encounters]))))])
 
 (defn damage-tab
   []
   [:> rn/View {:style {:flex-direction :column :align-items :center}}
    [:> rn/Text {:style {:color :white :font-size 30}} "Damage"]
-   (text-section (map #(get % :header) (vals damage))
-                 (map #(get % :body) (vals damage))
-                 (map #(get % :example) (vals damage)))])
+   (text-section (map #(get % :header) (vals (<sub [:damage])))
+                 (map #(get % :body) (vals (<sub [:damage])))
+                 (map #(get % :example) (vals (<sub [:damage]))))])
 
 (defn conditions-tab
   []
@@ -95,7 +95,7 @@
                                   [[:> rn/Text {:style {:color :white :font-size 16}} "Duration"]]
                                   [[:> rn/Text {:style {:color :white :padding-left 10}} duration]])))
                     [:> rn/View]
-                    (map vector (map #(get % :header) (vals conditions)) (map #(get % :body) (vals conditions)))))])
+                    (map vector (map #(get % :header) (vals (<sub [:conditions]))) (map #(get % :body) (vals (<sub [:conditions]))))))])
 
 
 
@@ -104,6 +104,7 @@
   []
   (case (<sub [:active-tab 0])
     :flow (flow-tab)
+    :stats (stats-tab)
     :checks (checks-tab)
     :encounters (encounters-tab)
     :damage (damage-tab)

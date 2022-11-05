@@ -1,8 +1,9 @@
 (ns main.world-section.views
   (:require
    ["react-native" :as rn]
-   [main.helpers :as helpers :refer [<sub >evt]]
-   [main.widgets :as widgets :refer [button text-section]]))
+   [main.helpers :as helpers :refer [<sub >evt title-case]]
+   [main.widgets :as widgets :refer [button domain-icons text-section]]
+   [main.db :as db :refer [app-db]]))
 
 (defn overview-tab
   []
@@ -48,6 +49,19 @@
    (territories-buttons)
    (territory-civilizations-buttons)
    (territories-details)])
+
+
+
+;; (defn civilization-button
+;;   [civilization-id]
+;;   (button {:style {:background-color (if (= (:active-civilization (<sub [:active-world])) (<sub [:active-civilization])) :gray :black) :padding 5 :margin 5 :width 100 :align-items :center}
+;;            :on-press #(do (>evt [:set-active-civilization civilization-id])
+;;                           (>evt [:set-active-tab :civilizations]))
+;;            :text-style {:color :white}
+;;            :text (<sub [:civilization-name civilization-id])})
+;;   (button {:style {:background-color (if (= (:active-civilization (<sub [:active-world])) civilization-id) :gray :black) :padding 5 :margin 5 :width 100 :align-items :center}
+;;            :on-press #(>evt [:set-active-civilization civilization-id])
+;;            :text (<sub [:civilization-name civilization-id])}))
 
 (defn civilizations-buttons
   []

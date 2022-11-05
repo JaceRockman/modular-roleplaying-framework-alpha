@@ -1,6 +1,6 @@
 (ns main.styles
-  (:require
-   [main.helpers :as helpers :refer [<sub]]))
+  (:require [clojure.string :as str]
+            [main.helpers :as helpers :refer [<sub]]))
 
 (defn active-mode [] (<sub [:style-mode]))
 

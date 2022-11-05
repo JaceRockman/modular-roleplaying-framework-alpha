@@ -1,14 +1,8 @@
 (ns main.subs
-  (:require
-   [re-frame.core :as rf :refer [reg-sub]]
-   [main.play-section.subs]
-   [main.world-section.subs]
-   [main.rules-section.subs]))
-
-(reg-sub
- :full-db
- (fn [db _]
-   db))
+  (:require [re-frame.core :as rf :refer [reg-sub]]
+            [main.play-section.subs]
+            [main.rules-section.subs]
+            [main.world-section.subs]))
 
 (reg-sub
  :style-mode

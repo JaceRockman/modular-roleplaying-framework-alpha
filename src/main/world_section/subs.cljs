@@ -1,6 +1,5 @@
 (ns main.world-section.subs
-  (:require 
-   [re-frame.core :as rf :refer [reg-sub]]))
+  (:require [re-frame.core :as rf :refer [reg-sub]]))
 
 (reg-sub
  :active-world
