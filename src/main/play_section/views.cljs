@@ -1,11 +1,14 @@
-(ns main.play-section.views
+(ns main.play-section.views 
   (:require
+   [clojure.edn :as edn :refer [read-string]]
    [clojure.core.async :as Async]
    [clojure.string :as string]
    [reagent.core :as r]
    ["react-native" :as rn]
    [main.helpers :as helpers :refer [<sub >evt]]
    [main.widgets :as widgets :refer [domain-icons]]))
+
+(<sub [:full-db])
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Resources Tab ;;
@@ -175,7 +178,8 @@
                            :active? active?
                            :active-style {:padding 0 :margin 0}
                            :on-press #(if active?
-                                        (>evt [:delete-character-resource char-id resource-id])
+                                        (do (>evt [:delete-character-resource char-id resource-id])
+                                            (>evt [:remove-action-resource char-id 100 resource-id]))
                                         (>evt [:add-character-resource char-id resource-id]))
                            :text (<sub [:resource-name resource-id])}))))
 
@@ -217,8 +221,8 @@
 
 (defn character-experience
   [char-id]
-  [:> rn/Text {:style {:left 85 :text-align :left :flex 5 :color :white}}
-   "Experience: " (<sub [:experience char-id])])
+  [:> rn/Text {:style {:color :white :text-align :center :width 70}}
+   "Exp: " (<sub [:experience char-id])])
 
 (defn resources
   [char-id resource-button-fn edit?]
@@ -229,7 +233,7 @@
       create-resource-button)
     helpers/spacer
     (if char-id
-      [:> rn/View {:top 15 :right 100} (character-experience char-id)])]
+      [:> rn/View {:top 15 :right 300} (character-experience char-id)])]
    (if @editing-resource?
      (edit-resource-section char-id (<sub [:resource-in-edit-mode])))
    [:> rn/View {:style {:flex-direction :row}}
@@ -358,26 +362,57 @@
 
 
 
+
 (defn simple-stat
   [char-id domain]
-  (let [{:keys [skill ability name]} (<sub [:character-simple-stat char-id domain])]
-    [:> rn/TouchableOpacity {:key (helpers/new-key)
-                             :style {:height 100 :width 200 :flex-direction :column :justify-content "center" :align-items "center" :padding 5 :border-width 1 :border-color :white}}
-     [:> rn/Text {:style {:font-size 18 :color :white}} name]
-     [:> rn/View
-      (widgets/flat-button {:style {:display (if (<sub [:edit-mode]) "flex" "none")}
-                            :on-press #(do (>evt [:decrease-skill char-id [domain :quality :initiation]])
-                                           (>evt [:decrease-skill char-id [domain :quality :reaction]])
-                                           (>evt [:decrease-skill char-id [domain :quality :continuation]])
-                                           (>evt [:update-exp char-id inc]))
-                            :text "-"})
-      [:> rn/Text {:style {:font-size 18 :color :white}} (str skill "d" ability)]
-      (widgets/flat-button {:style {:display (if (<sub [:edit-mode]) "flex" "none")}
-                            :on-press #(do (>evt [:increase-skill char-id [domain :quality :initiation]])
-                                           (>evt [:increase-skill char-id [domain :quality :reaction]])
-                                           (>evt [:increase-skill char-id [domain :quality :continuation]])
-                                           (>evt [:update-exp char-id dec]))
-                            :text "+"})]]))
+  (let [stat-name (string/capitalize (name domain))
+        skill-paths [[domain :quality :initiation]
+                     [domain :quality :reaction]
+                     [domain :quality :continuation]]
+        ability-paths [[domain :power :dominance]
+                       [domain :power :competence]
+                       [domain :power :resilience]]
+        skill-value (int (/ (apply + (map #(:value (<sub [:character-stat char-id %])) skill-paths)) 3))
+        ability-value (int (/ (apply + (map #(:value (<sub [:character-stat char-id %])) ability-paths)) 3))]
+    (widgets/flat-button {:key helpers/new-key
+                          :style {:height 100 :width 175 :flex-direction :column :justify-content "center"
+                                  :align-items "center" :padding 5 :border-width 1 :border-color :white}
+                          :on-press #(doall (>evt [:set-active-skill char-id domain])
+                                            (>evt [:set-active-ability char-id domain]))
+                          :active? (and (= domain (<sub [:character-active-skill char-id]))
+                                        (= domain (<sub [:character-active-ability char-id])))
+                          :text [:> rn/View {:style {:flex-direction :row}}
+                                 [:> rn/View {:style {:flex-direction :column :padding 0}}
+                                  (widgets/flat-button {:style {:display (if (<sub [:edit-mode]) "flex" "none") :width 25 :height 25 :padding 0}
+                                                        :on-press (fn []
+                                                                    (doall (map #(do (>evt [:increase-skill char-id %]) (>evt [:update-exp char-id dec])) skill-paths)))
+                                                        :text-style {:font-size 10 :height 25 :top 7}
+                                                        :disabled? (> 1 (<sub [:experience char-id]))
+                                                        :text (:up-sm widgets/common-icons)})
+                                  (widgets/flat-button {:style {:display (if (<sub [:edit-mode]) "flex" "none") :width 25 :height 25 :padding 0}
+                                                        :on-press (fn []
+                                                                    (doall (map #(do (>evt [:decrease-skill char-id %]) (>evt [:update-exp char-id inc])) skill-paths)))
+                                                        :text-style {:font-size 10 :height 25 :top 7}
+                                                        :disabled? (> 2 skill-value)
+                                                        :text (:down-sm widgets/common-icons)})]
+                                 [:> rn/View {:style {:flex-direction :column :justify-content "center" :align-items "center" :margin-left 5 :margin-right 5}}
+                                  [:> rn/Text {:style {:font-size 12 :color :white}} stat-name]
+                                  [:> rn/Text {:style {:font-size 18 :color :white}} (str skill-value "d" ability-value)]]
+                                 [:> rn/View {:style {:flex-direction :column}}
+                                  (widgets/flat-button {:style {:display (if (<sub [:edit-mode]) "flex" "none") :width 25 :height 25 :padding 0}
+                                                        :on-press (fn []
+                                                                    (doall
+                                                                     (map #(do (>evt [:increase-ability char-id %]) (>evt [:update-exp char-id dec])) ability-paths)))
+                                                        :disabled? (> 1 (<sub [:experience char-id]))
+                                                        :text-style {:font-size 10 :height 25 :top 7}
+                                                        :text (:up-sm widgets/common-icons)})
+                                  (widgets/flat-button {:style {:display (if (<sub [:edit-mode]) "flex" "none") :width 25 :height 25 :padding 0}
+                                                        :on-press (fn []
+                                                                    (doall (map #(do (>evt [:decrease-ability char-id %]) (>evt [:update-exp char-id inc]))
+                                                                                ability-paths)))
+                                                        :disabled? (> 3 ability-value)
+                                                        :text-style {:font-size 10 :height 25 :top 7}
+                                                        :text (:down-sm widgets/common-icons)})]]})))
 
 (defn moderate-stat
   [char-id skill-path ability-path]
@@ -423,6 +458,27 @@
 
 (defn complex-stat
   [char-id stat-path])
+
+(defn simple-action-stat
+  [char-id domain]
+  (let [action-id (<sub [:active-action char-id])
+        stat-name (string/capitalize (name domain))
+        skill-paths [[domain :quality :initiation]
+                     [domain :quality :reaction]
+                     [domain :quality :continuation]]
+        ability-paths [[domain :power :dominance]
+                       [domain :power :competence]
+                       [domain :power :resilience]]
+        skill-value (int (/ (apply + (map #(:value (<sub [:character-stat char-id %])) skill-paths)) 3))
+        ability-value (int (/ (apply + (map #(:value (<sub [:character-stat char-id %])) ability-paths)) 3))]
+    (widgets/flat-button {:on-press #(>evt [:set-simple-action-stat-paths char-id action-id domain])
+                          :style {:height 75 :width 150 :flex-direction :column :justify-content "center" :align-items "center"
+                                  :padding 5 :border-width 1 :border-color :white}
+                          :active? (= domain (<sub [:simple-action-stat-path char-id action-id]))
+                          :text [:> rn/View {:style {:flex-direction :row}}
+                                 [:> rn/View {:style {:flex-direction :column :justify-content "center" :align-items "center" :margin-left 5 :margin-right 5}}
+                                  [:> rn/Text {:style {:font-size 14 :color :white}} stat-name]
+                                  [:> rn/Text {:style {:font-size 18 :color :white}} (str skill-value "d" ability-value)]]]})))
 
 (defn moderate-action-stat
   [char-id skill-path ability-path]
@@ -478,29 +534,39 @@
      (damage-tracker char-id domain)
      [:> rn/View {:width 100}])])
 
+(defn simple-stat-row
+  [char-id domain stat-fn damage?]
+  [:> rn/View {:key (helpers/new-key)
+               :style {:flex-direction :row :align-items "center" :justify-content "center"}}
+   (domain domain-icons)
+   (stat-fn char-id domain)
+   (if damage?
+     (damage-tracker char-id domain)
+     [:> rn/View {:width 100}])])
+
 (defn character-stats
   [char-id stat-complexity]
   [:> rn/View {:style {:width "100%" :align-items "center" :justify-content "center" :padding-bottom 15}}
    [:> rn/Text {:style {:color :white :font-size 24}} "Stats"]
    [:> rn/View {:style {:flex-direction :row}}
     (character-experience char-id)
-    [:> rn/Text {:style {:align-self :flex-end :right 50 :color :white :padding-right 8}} "Damage"]]
-   (doall (map stat-row
+    [:> rn/Text {:style {:align-self :flex-end :right 225 :color :white :padding-right 8}} "Damage"]]
+   (doall (map simple-stat-row
                (repeat char-id)
                [:physical :spiritual :mental :social]
-               (repeat moderate-stat)
+               (repeat simple-stat)
                (repeat true)))])
 
 
 
 (defn action-base-dice-pool-tab
   [char-id]
-  [:> rn/View {:style {:width "100%" :left "4%" :align-items :center :justify-content :center :padding-bottom 15}}
+  [:> rn/View {:style {:left "4%" :align-items :center :justify-content :center :padding-bottom 15}}
    (doall
-    (map stat-row
+    (map simple-stat-row
          (repeat char-id)
          [:physical :spiritual :mental :social]
-         (repeat moderate-action-stat)
+         (repeat simple-action-stat)
          (repeat false)))])
 
 (defn action-resource-details
@@ -586,7 +652,7 @@
 
 (defn action-splintering-tab
   [char-id action-id]
-  (let [main-dice-pool (<sub [:action-roll-value char-id action-id 1 {}])
+  (let [main-dice-pool (<sub [:simple-action-roll-value char-id action-id 1 {}])
         splinters (helpers/splinter
                    (<sub [:action-splinters char-id action-id])
                    [(:dice-number main-dice-pool) (:dice-size main-dice-pool) (:dice-bonus main-dice-pool)])]
@@ -614,7 +680,7 @@
 
 (defn action-combining-tab
   [char-id action-id]
-  (let [main-dice-pool (<sub [:action-roll-value char-id action-id 1 {}])
+  (let [main-dice-pool (<sub [:simple-action-roll-value char-id action-id 1 {}])
         splinters (helpers/splinter
                    (<sub [:action-splinters char-id action-id])
                    [(:dice-number main-dice-pool) (:dice-size main-dice-pool) (:dice-bonus main-dice-pool)])
@@ -651,9 +717,9 @@
    (doall (map #(conj [:> rn/Text {:key (helpers/new-key)
                                    :style {:color :white}}] (str % " ")) roll))
    [:> rn/Text {:style {:color :white}} (cond
-                                          (> 0 bonus) (str bonus " ")
-                                          (= 0 bonus) nil
-                                          (< 0 bonus) (str "+" bonus " "))]
+                                          (> 0 bonus) (str (apply max (flatten roll)) " " bonus " ")
+                                          (= 0 bonus) (apply max (flatten roll))
+                                          (< 0 bonus) (str (apply max (flatten roll)) " +" bonus " "))]
    [:> rn/Text {:style {:color :white}} (str "-> " roll-result)]])
 
 (defn roll-results
@@ -663,7 +729,7 @@
    (widgets/header-format {:font-size 24 :color :white} "Roll Results")
    (if (> 2 @active-action-tab)
      [:> rn/Text {:style {:color :white}}
-      "Passive Result: " (helpers/passive-result (<sub [:action-roll-value char-id action-id @active-action-tab {}]))])
+      "Passive Result: " (helpers/passive-result (<sub [:simple-action-roll-value char-id action-id @active-action-tab {}]))])
    [:> rn/View {:style {:flex-direction :row :display (if (empty? (<sub [:roll-results-by-action char-id action-id])) :none :flex)}}
     (widgets/button {:style {:position :absolute :align-items :center :top 4 :left -20 :width 20 :height 20}
                      :text-style {:color :white}
@@ -675,19 +741,30 @@
                  :style {:flex-direction :column}}
      (reverse (take-last (if @show-more-results? 10 1) (doall (map dice-roll-display (<sub [:roll-results-by-action char-id action-id])))))]]])
 
+(defn dice-rolling-section
+  [char-id action-id]
+  [:> rn/View
+   [:> rn/View {:style {:flex-wrap :wrap :justify-content :center :flex-direction :row}}
+    (doall (map #(apply widgets/dice-pool-button (concat [char-id] %))
+                (<sub [:simple-action-roll-value-buttons char-id action-id 1 {}])))]
+   (roll-results char-id action-id)])
+
 (defn action
   [char-id action-id]
   [:> rn/View {:style {:align-items :center}}
    [:> rn/View {:style {:flex-wrap :wrap :justify-content :center :flex-direction :row}}
     (doall (map #(apply widgets/dice-pool-button (concat [char-id] %))
-                (<sub [:action-roll-value-buttons char-id action-id @active-action-tab {}])))]
+                (<sub [:simple-action-roll-value-buttons char-id action-id @active-action-tab {}])))]
    (roll-results char-id action-id)
    (widgets/tab-navigation {}
-                           ["Base Dice Pool" "Benefits & Detriments" "Complexity" "Careful or Reckless"]
+                           ["Base Dice Pool" "Benefits & Detriments" 
+                            ;; "Complexity" "Careful or Reckless"
+                            ]
                            [(action-base-dice-pool-tab char-id)
                             (action-mods-tab char-id action-id)
-                            (action-splintering-tab char-id action-id)
-                            (action-combining-tab char-id action-id)]
+                            ;; (action-splintering-tab char-id action-id)
+                            ;; (action-combining-tab char-id action-id)
+                            ]
                            active-action-tab)])
 
 (defn character-action-button
@@ -760,7 +837,7 @@
 (defn character-details
   [char-id]
   (into [:> rn/View {:style {:width "95%" :justify-content :center :align-items :center}}]
-        (map card
+        (map widgets/card
              [(if (<sub [:edit-mode])
                 (character-profile-edit char-id)
                 (if (< 0 (apply + (map count (vals (dissoc (dissoc (<sub [:character-profile char-id]) :name) :portrait)))))
@@ -774,11 +851,29 @@
              ["Details" "Stats" "Resources" "Actions" "Notes"]
              [character-details-toggle character-stats-toggle character-resources-toggle character-actions-toggle character-notes-toggle])))
 
+(def show-db-diff
+  (r/atom false))
+
 (defn characters-tab
   []
   (let [char-id (<sub [:active-character])]
     [:> rn/View {:style {:width "100%" :align-items :center}}
      [:> rn/Text {:style {:color :white :font-size 30}} "Characters"]
+     (widgets/float-button {:text "Database Download/Upload"
+                           :text-style {:color :white}
+                           :active? @show-db-diff
+                           :on-press #(swap! show-db-diff not)})
+     (if @show-db-diff
+       (widgets/text-submission
+        (fn [i] (>evt [:manual-initialize-db (edn/read-string (str i))]))
+        ""
+        "Upload Data"))
+     (if @show-db-diff
+       [:> rn/Text {:style {:color :white :text-align :center :margin-left "10%" :margin-right "10%"}
+                    :selectable true}
+        (str "To save data for future use, copy all of the data below and save it to some external location. To reload the data, copy all of that data back into the input field and submit it.\n\n"
+             (<sub [:db-diff]))])
+     
      [:> rn/View {:style {:position :absolute :right 0 :top 0 :width 50 :height 50 :border-radius 100}}
       (if (nil? char-id)
         character-add-button

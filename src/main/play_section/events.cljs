@@ -3,6 +3,20 @@
    [main.helpers :as helpers]
    [re-frame.core :as rf :refer [reg-event-db]]))
 
+(defn deep-merge
+  "Recursively merges maps."
+  [& maps]
+  (letfn [(m [& xs]
+            (if (some #(and (map? %) (not (record? %))) xs)
+              (apply merge-with m xs)
+              (last xs)))]
+    (reduce m maps)))
+
+(reg-event-db
+ :manual-initialize-db
+ (fn [db [_ new-db]]
+   (deep-merge db new-db)))
+
 (reg-event-db
  :set-active-character
  (fn [db [_ char-id]]
@@ -337,6 +351,12 @@
                                             (conj curr-active-resources resource-id))))))
 
 (reg-event-db
+ :set-active-resource-map
+ (fn [db [_ char-id domain resource-id]]
+   (update-in db [:characters char-id :active-resources-map domain]
+              (fn [curr-active-resource] (if (= curr-active-resource resource-id) nil resource-id)))))
+
+(reg-event-db
  :add-character-resource
  (fn [db [_ char-id resource-id]]
    (assoc-in db [:characters char-id :resources resource-id] {:notes ""})))
@@ -359,7 +379,9 @@
          resource-cost (+ resource-quality resource-power)] 
      (-> db
          (helpers/dissoc-in [:characters char-id :resources] resource-id)
-         (update-in [:characters char-id :experience] #(+ % resource-cost))))))
+         (update-in [:characters char-id :experience] #(+ % resource-cost))
+         (update-in [:characters char-id :active-resources] (fn [curr-active-resources]
+                                                              (remove #(= resource-id %) curr-active-resources)))))))
 
 (reg-event-db
  :delete-resource
@@ -422,6 +444,13 @@
          (assoc-in [:characters char-id :actions action-id :ability-path] (if deselect? nil ability-path))))))
 
 (reg-event-db
+ :set-simple-action-stat-paths
+ (fn [db [_ char-id action-id domain]]
+   (let [current-stat-val (get-in db [:characters char-id :actions action-id :stat])
+         deselect? (= current-stat-val domain)]
+     (assoc-in db [:characters char-id :actions action-id :stat] (if deselect? nil domain)))))
+
+(reg-event-db
  :set-action-skill-path
  (fn [db [_ char-id action-id skill-path]]
    (let [current-val (get-in db [:characters char-id :actions action-id :skill-path])]
@@ -442,6 +471,15 @@
  :remove-action-resource
  (fn [db [_ char-id action-id resource-id]]
    (update-in db [:characters char-id :actions action-id :resources] #(remove (fn [v] (= resource-id v)) %))))
+
+(reg-event-db
+ :toggle-action-resource
+ (fn [db [_ char-id action-id resource-id]]
+   (update-in db [:characters char-id :actions action-id :resources]
+              (fn [curr-active-resources]
+                (if (some #(= resource-id %) curr-active-resources)
+                  (remove #(= resource-id %) curr-active-resources)
+                  (conj curr-active-resources resource-id))))))
 
 (reg-event-db
  :update-action-dice-mod

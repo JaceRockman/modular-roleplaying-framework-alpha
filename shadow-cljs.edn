@@ -8,4 +8,12 @@
                       :output-dir       "app"
                       :compiler-options {:infer-externs :auto}
                       :devtools         {:autoload true
-                                         :preloads [shadow.expo.keep-awake]}}}}
+                                         :preloads [shadow.expo.keep-awake]}}
+              ;;   :app2 {:target           :node-script
+              ;;          :main             main.app/init
+              ;;          :output-to        "./app2/script.js"
+              ;;          :output-dir       "app2"
+              ;;          :compiler-options {:infer-externs :auto}
+              ;;          :devtools         {:autoload true
+              ;;                             :preloads [shadow.expo.keep-awake]}}
+                }}

@@ -1,8 +1,9 @@
 (ns main.widgets
-  (:require ["react-native" :as rn]
-            [reagent.core :as r]
-            [main.styles :as styles]
-            [main.helpers :as helpers :refer [>evt <sub]]))
+  (:require
+   ["react-native" :as rn]
+   [reagent.core :as r]
+   [main.styles :as styles]
+   [main.helpers :as helpers :refer [>evt <sub]]))
 
 (def VectorIcons (js/require "@expo/vector-icons"))
 (def FontAwesome (.-FontAwesome VectorIcons))
@@ -123,20 +124,18 @@
             :text ""}
            props)))
 
-
 (defn dice-pool-button
   [char-id action-id dice-pool]
-  (let [active? (r/atom false)]
-    (button {:style styles/flat-button-style
-             :text-style styles/flat-button-text-style
-             :active? @active?
-             :active-style styles/active-flat-button-style
-             :active-text-style styles/active-flat-button-text-style
-             :disabled? nil
-             :disabled-style styles/disabled-flat-button-style
-             :disabled-text-style styles/disabled-flat-button-text-style
-             :on-press #(>evt [:log-dice-roll char-id action-id dice-pool])
-             :text (str "Roll: " (apply str (interpose " + " (map :result (map #(apply helpers/formatted-roll %) dice-pool)))))})))
+  (button {:style styles/flat-button-style
+           :text-style styles/flat-button-text-style
+           :active? nil
+           :active-style styles/active-flat-button-style
+           :active-text-style styles/active-flat-button-text-style
+           :disabled? nil
+           :disabled-style styles/disabled-flat-button-style
+           :disabled-text-style styles/disabled-flat-button-text-style
+           :on-press #(>evt [:log-dice-roll char-id action-id dice-pool])
+           :text (str "Roll: " (apply str (interpose " + " (map :result (map #(apply helpers/formatted-roll %) dice-pool)))))}))
 
 
 
@@ -190,7 +189,7 @@
 (defn tab-navigation
   [tab-props tab-titles content tracker]
   [:> rn/View
-   [:> rn/View {:style {:width "90%" :align-items :center :justify-content :center :flex-direction :row :padding-bottom 20}}
+   [:> rn/View {:style {:align-items :center :justify-content :center :flex-direction :row :padding-bottom 20}}
     (doall (map-indexed (fn [i title]
                           (flat-button (merge tab-props {:text title
                                                          :on-press #(reset! tracker i)
@@ -224,23 +223,12 @@
                                     (if (some? example)
                                       [[:> rn/View {:style {:padding-bottom 20}}
                                         [:> rn/View {:flex-direction :row :align-items :center}
-                                         [:> rn/Text {:style {:color :white :font-size 18}} "Example: "]]
+                                         [:> rn/Text {:style {:color :white :font-size 18}} "Examples: "]]
                                         [:> rn/Text {:style {:color :white :display (if get-display :flex :none)}}
                                          (str example)]]]
                                       [[:> rn/View {:style {:padding-bottom 20}}]])))))
                     [:> rn/View]
                     (map vector headers paragraphs examples)))))
-
-;; WORKING - DON'T DELETE
-;; (defn text-area
-;;   [evt sub label]
-;;   [:> rn/View {:flex-direction :row}
-;;    [:> rn/Text {:style {:color :white :font-size 18}} (str label ": ")]
-;;    [:> rn/TextInput {:style {:background-color :white :padding-left 10 :padding-right 10 :margin-bottom 3 :margin-top 3 :bottom 5}
-;;                      :on-change-text #(evt %)
-;;                      :default-value sub}
-;;     ""]])
-
 
 (defn text-area
   [evt sub label]
@@ -251,3 +239,23 @@
                      :default-value sub}
     ""]])
 
+(defn text-submission
+  [evt sub label]
+  [:> rn/View {:flex-direction :row}
+   [:> rn/Text {:style {:color :white :font-size 18}} (str label ": ")]
+   [:> rn/TextInput {:style {:background-color :white :padding-left 10 :padding-right 10 :margin-bottom 3 :margin-top 3 :bottom 5}
+                     :on-change-text #(evt %)
+                     :default-value sub}
+    ""]])
+
+(defn card
+  [content header state]
+  (if (some? content)
+    [:> rn/View {:style {:width "100%" :background-color "#222222" :padding 20 :margin 10}}
+     (flat-button {:style {:background-color nil :margin-right 5 :position :absolute :align-self :flex-end}
+                           :text-style {:color :black}
+                           :text (if @state (:up-lrg common-icons) (:down-lrg common-icons))
+                           :on-press (fn [] (swap! state not))})
+     (if @state
+       content
+       (header-format {:font-size 28 :color :white :padding 10} header))]))

@@ -3,6 +3,11 @@
             [re-frame.core :as rf :refer [reg-sub]]))
 
 (reg-sub
+ :db-diff
+ (fn [db _]
+   (second (clojure.data/diff main.db/app-db db))))
+
+(reg-sub
  :characters
  (fn [db _]
    (keys (:characters db))))
@@ -215,9 +220,7 @@
          stat-cost (+ skill-cost ability-cost)
          character-resources (keys (get-in db [:characters char-id :resources])) 
          resource-cost (apply + (map #(helpers/calc-resource-cost db %) character-resources))]
-     (- 100 (+ stat-cost resource-cost)))))
-
-(apply vals (vals {:a {:b {:c "c" :d "d"}}}))
+     (- 80 (+ stat-cost resource-cost)))))
 
 (reg-sub
  :equipment
@@ -253,6 +256,11 @@
  :active-resources
  (fn [db [_ char-id]]
    (get-in db [:characters char-id :active-resources])))
+
+(reg-sub
+ :active-resource
+ (fn [db [_ char-id domain]]
+   (get-in db [:characters char-id :active-resources-map domain])))
 
 (reg-sub
  :resource-in-edit-mode
@@ -379,29 +387,92 @@
  (fn [db [_ char-id]]
    (get-in db [:characters char-id :active-action])))
 
+(defn skill-paths
+  [domain]
+  [[domain :quality :initiation]
+   [domain :quality :reaction]
+   [domain :quality :continuation]])
+
+(defn ability-paths
+  [domain]
+  [[domain :power :dominance]
+   [domain :power :competence]
+   [domain :power :resilience]])
+
+(reg-sub
+ :simple-action-roll-value
+ (fn [db [_ char-id action-id active-tab]]
+   (let [action (get-in db [:characters char-id :actions action-id])
+         action-skill-value (int (/ (apply + (map #(get-in db (concat [:characters char-id :stats] % [:value])) (skill-paths (:stat action)))) 3))
+         action-ability-value (int (/ (apply + (map #(get-in db (concat [:characters char-id :stats] % [:value])) (ability-paths (:stat action)))) 3))
+         action-resources (:resources action)
+         action-resources-quality (map #(get-in db [:resources % :benefits :quality :value]) action-resources)
+         action-resources-power (map #(get-in db [:resources % :benefits :power :value]) action-resources)
+         action-dice-mod (:dice-mod action)
+         action-flat-mod (:flat-mod action)]
+     (case active-tab
+       0 (helpers/formatted-roll
+          action-skill-value
+          action-ability-value
+          0)
+       1 (helpers/formatted-roll
+          (reduce + (+ action-skill-value action-dice-mod) action-resources-quality)
+          action-ability-value
+          (reduce + action-flat-mod action-resources-power))
+       2 (str "INCOMPLETE")
+       3 (str "INCOMPLETE")
+       :else (str "INCOMPLETE")))))
+
+(reg-sub
+ :simple-action-roll-value-buttons
+ (fn [db [_ char-id action-id active-tab]]
+   (let [action (get-in db [:characters char-id :actions action-id])
+         action-skill-value (int (/ (apply + (map #(get-in db (concat [:characters char-id :stats] % [:value])) (skill-paths (:stat action)))) 3)) 
+         action-ability-value (int (/ (apply + (map #(get-in db (concat [:characters char-id :stats] % [:value])) (ability-paths (:stat action)))) 3))
+         action-resources (:resources action)
+         action-resources-quality (map #(get-in db [:resources % :benefits :quality :value]) action-resources)
+         action-resources-power (map #(get-in db [:resources % :benefits :power :value]) action-resources)
+         action-dice-mod (:dice-mod action)
+         action-flat-mod (:flat-mod action)
+         full-dice-pool [(reduce + (+ action-skill-value action-dice-mod) action-resources-quality)
+                         action-ability-value
+                         (reduce + action-flat-mod action-resources-power)]
+         action-splinters (:splinters action)
+         splintered-pools (helpers/splinter action-splinters full-dice-pool)
+         action-combinations (:combinations action)
+         combination-pools (map #(conj %2 (get %3 %1)) (range 0 (count splintered-pools)) splintered-pools (repeat action-combinations))]
+     (case active-tab
+       0 [[action-id [[action-skill-value action-ability-value 0]]]]
+       1 [[action-id [[(reduce + (+ action-skill-value action-dice-mod) action-resources-quality)
+                       action-ability-value
+                       (reduce + action-flat-mod action-resources-power)]]]]
+       2 (map #(vector action-id [%]) splintered-pools)
+       3 (map #(vector action-id %) (map helpers/apply-combination combination-pools))
+       :else [[action-id [[action-skill-value action-ability-value 0]]]]))))
+
 (reg-sub
  :action-roll-value
-(fn [db [_ char-id action-id active-tab]]
-  (let [action (get-in db [:characters char-id :actions action-id])
-        action-skill-value (get-in db (concat [:characters char-id :stats] (:skill-path action) [:value]))
-        action-ability-value (get-in db (concat [:characters char-id :stats] (:ability-path action) [:value]))
-        action-resources (:resources action)
-        action-resources-quality (map #(get-in db [:resources % :benefits :quality :value]) action-resources)
-        action-resources-power (map #(get-in db [:resources % :benefits :power :value]) action-resources)
-        action-dice-mod (:dice-mod action)
-        action-flat-mod (:flat-mod action)]
-   (case active-tab
-     0 (helpers/formatted-roll
-        action-skill-value
-        action-ability-value
-        0)
-     1 (helpers/formatted-roll
-        (reduce + (+ action-skill-value action-dice-mod) action-resources-quality)
-        action-ability-value
-        (reduce + action-flat-mod action-resources-power))
-     2 (str "INCOMPLETE")
-     3 (str "INCOMPLETE")
-     :else (str "INCOMPLETE")))))
+ (fn [db [_ char-id action-id active-tab]]
+   (let [action (get-in db [:characters char-id :actions action-id])
+         action-skill-value (get-in db (concat [:characters char-id :stats] (:skill-path action) [:value]))
+         action-ability-value (get-in db (concat [:characters char-id :stats] (:ability-path action) [:value]))
+         action-resources (:resources action)
+         action-resources-quality (map #(get-in db [:resources % :benefits :quality :value]) action-resources)
+         action-resources-power (map #(get-in db [:resources % :benefits :power :value]) action-resources)
+         action-dice-mod (:dice-mod action)
+         action-flat-mod (:flat-mod action)]
+     (case active-tab
+       0 (helpers/formatted-roll
+          action-skill-value
+          action-ability-value
+          0)
+       1 (helpers/formatted-roll
+          (reduce + (+ action-skill-value action-dice-mod) action-resources-quality)
+          action-ability-value
+          (reduce + action-flat-mod action-resources-power))
+       2 (str "INCOMPLETE")
+       3 (str "INCOMPLETE")
+       :else (str "INCOMPLETE")))))
 
 (reg-sub
  :action-roll-value-buttons
@@ -435,6 +506,12 @@
  :action-title
  (fn [db [_ char-id action-id]]
    (get-in db [:characters char-id :actions action-id :title])))
+
+
+(reg-sub
+ :simple-action-stat-path
+ (fn [db [_ char-id action-id]]
+   (get-in db [:characters char-id :actions action-id :stat])))
 
 (reg-sub
  :action-skill-path

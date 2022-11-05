@@ -1,11 +1,10 @@
 (ns main.events
   (:require
-   [re-frame.core :as rf :refer [reg-event-db reg-event-fx]]
+   [re-frame.core :as rf :refer [reg-event-db]]
    [main.db :as db :refer [app-db]]
    [main.play-section.events]
    [main.rules-section.events]
    [main.world-section.events]))
-
 
 (reg-event-db
  :initialize-db
@@ -41,6 +40,6 @@
 (reg-event-db
  :set-active-tab
  (fn [db [_ tab]]
-   (-> db 
+   (-> db
        (assoc-in [:sections (get db :active-section) :active-tab] tab)
        (assoc :active-resource nil))))

@@ -1,11 +1,11 @@
 (ns main.views
-  (:require ["react-native" :as rn]
-            [main.helpers :as helpers :refer [>evt <sub]]
-            [main.events]
-            [main.subs]
-            [main.styles :as styles]
-            [main.widgets :as widgets]))
-
+  (:require
+   ["react-native" :as rn]
+   [main.helpers :as helpers :refer [>evt <sub]]
+   [main.events]
+   [main.subs]
+   [main.styles :as styles]
+   [main.widgets :as widgets]))
 
 (defn tab
   [tab-name]

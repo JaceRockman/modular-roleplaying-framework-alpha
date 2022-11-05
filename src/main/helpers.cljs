@@ -1,7 +1,8 @@
 (ns main.helpers
-  (:require [clojure.string :as str]
-            [re-frame.core :as rf]
-            ["react-native" :as rn]))
+  (:require
+   [clojure.string :as str]
+   [re-frame.core :as rf]
+   ["react-native" :as rn]))
 
 
 (def <sub (comp deref rf/subscribe))
