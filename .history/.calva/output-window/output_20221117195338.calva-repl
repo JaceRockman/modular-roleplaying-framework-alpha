@@ -1,0 +1,161 @@
+; This is the Calva evaluation results output window.
+; TIPS: The keyboard shortcut `ctrl+alt+o o` shows and focuses this window
+;   when connected to a REPL session.
+; Please see https://calva.io/output/ for more info.
+; Happy coding! ♥️
+
+; Jacking in...
+; Starting Jack-in Terminal: npx.cmd shadow-cljs -d cider/cider-nrepl:0.28.5 watch app
+; Hooking up nREPL sessions...
+; Connected session: clj
+; TIPS:
+;   - You can edit the contents here. Use it as a REPL if you like.
+;   - `alt+enter` evaluates the current top level form.
+;   - `ctrl+enter` evaluates the current form.
+;   - `alt+up` and `alt+down` traverse up and down the REPL command history
+;      when the cursor is after the last contents at the prompt
+;   - Clojure lines in stack traces are peekable and clickable.
+clj꞉shadow.user꞉>  ; Use `alt+enter` to evaluate
+; Creating cljs repl session...
+; Connecting cljs repl: Hello RN Shadow...
+;   The Calva Connection Log might have more connection progress information.
+; Connected session: cljs, repl: app
+; TIPS: You can choose which REPL to use (clj or cljs):
+;    *Calva: Toggle REPL connection*
+;    (There is a button in the status bar for this)
+; Jack-in done.
+cljs꞉cljs.user꞉>  ; Use `alt+enter` to evaluate
+nil
+; ------ WARNING - :undeclared-var -----------------------------------------------
+;  Resource: <eval>:1:41
+;  Use of undeclared Var main.play-section.simple-character/char-id
+; --------------------------------------------------------------------------------
+; 
+cljs꞉main.play-section.simple-character꞉> 
+nil
+cljs꞉main.play-section.simple-character꞉> 
+:physical
+cljs꞉main.play-section.simple-character꞉> 
+:physical
+cljs꞉main.play-section.simple-character꞉> 
+{:physical
+ {:quality
+  {:initiation {:name "Coordination", :value 4},
+   :reaction {:name "Reflexes", :value 4},
+   :continuation {:name "Endurance", :value 4}},
+  :power
+  {:dominance {:name "Might", :value 6},
+   :competence {:name "Finesse", :value 6},
+   :resilience {:name "Fortitude", :value 6}}},
+ :spiritual
+ {:quality
+  {:initiation {:name "Exertion", :value 1},
+   :reaction {:name "Instinct", :value 1},
+   :continuation {:name "Perseverance", :value 1}},
+  :power
+  {:dominance {:name "Willpower", :value 6},
+   :competence {:name "Discipline", :value 6},
+   :resilience {:name "Tenacity", :value 6}}},
+ :mental
+ {:quality
+  {:initiation {:name "Concentration", :value 1},
+   :reaction {:name "Recognition", :value 1},
+   :continuation {:name "Comprehension", :value 1}},
+  :power
+  {:dominance {:name "Intellect", :value 6},
+   :competence {:name "Focus", :value 6},
+   :resilience {:name "Stability", :value 6}}},
+ :social
+ {:quality
+  {:initiation {:name "Persuasion", :value 2},
+   :reaction {:name "Insight", :value 2},
+   :continuation {:name "Connections", :value 2}},
+  :power
+  {:dominance {:name "Presence", :value 8},
+   :competence {:name "Wit", :value 8},
+   :resilience {:name "Poise", :value 8}}}}
+cljs꞉main.play-section.simple-character꞉> 
+(147 512)
+cljs꞉main.play-section.simple-character꞉> 
+(503 147 512)
+cljs꞉main.play-section.simple-character꞉> 
+(504 147 512)
+cljs꞉main.play-section.simple-character꞉> 
+(509 147 512)
+cljs꞉main.play-section.simple-character꞉> 
+(511 147 512)
+cljs꞉main.play-section.simple-character꞉> 
+{:id 202,
+ :editable? true,
+ :type :traits,
+ :name "Create a Thieves' Guild",
+ :properties [:goal],
+ :benefits {:quality {:name "Clarity", :value 2}, :power {:name "Dedication", :value 0}},
+ :details
+ "Grants +Clarity +Dedication to checks that move you towards accomplishing your goal Checks that set you back with respect to your goal gain penalties equal to the Quality and Power of your goal. Circumstances may cause multiple traits to apply bonuses or penalties to a check. Ultimately, it is up to the DM's discretion whether a trait grants a bonus or penalty. Some examples of goals are to discover forgotten magics, wealth, or to be granted knighthood."}
+cljs꞉main.play-section.simple-character꞉> 
+{:id 202,
+ :editable? true,
+ :type :traits,
+ :name "Create a Thieves' Guild",
+ :properties [:goal],
+ :benefits {:quality {:name "Clarity", :value 2}, :power {:name "Dedication", :value 0}},
+ :details
+ "Grants +Clarity +Dedication to checks that move you towards accomplishing your goal Checks that set you back with respect to your goal gain penalties equal to the Quality and Power of your goal. Circumstances may cause multiple traits to apply bonuses or penalties to a check. Ultimately, it is up to the DM's discretion whether a trait grants a bonus or penalty. Some examples of goals are to discover forgotten magics, wealth, or to be granted knighthood."}
+cljs꞉main.play-section.simple-character꞉> 
+(147)
+cljs꞉main.play-section.simple-character꞉> 
+()
+cljs꞉main.play-section.simple-character꞉> 
+nil
+; [line 1, col 5542] Invalid symbol: ../assets/Avis.png.
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; [line 1, col 2] Unmatched delimiter }.
+; [line 1, col 2] Unmatched delimiter }.
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+; [line 2, col 5] Unexpected EOF reading string starting ")]).
+cljs꞉main.play-section.simple-character꞉> 
+nil
+; No available JS runtime.
+; See https://shadow-cljs.github.io/docs/UsersGuide.html#repl-troubleshooting
+cljs꞉main.play-section.simple-character꞉> 
+nil
+cljs꞉main.play-section.simple-character꞉> 
+nil
+cljs꞉main.play-section.simple-character꞉> 
+(2310 2153 2155 2512 2513 2514 2515 2516 310 502 504 153 155 510 511)
+cljs꞉main.play-section.simple-character꞉> 
+nil
+cljs꞉main.play-section.simple-character꞉> 
+nil
+cljs꞉main.play-section.simple-character꞉> 
