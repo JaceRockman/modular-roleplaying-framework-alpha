@@ -1,0 +1,19 @@
+{:source-paths ["src" "assets"]
+
+ :dependencies [[reagent "1.1.0"]
+                [re-frame "1.2.0"]]
+
+ :builds       {:app {:target           :react-native
+                      :init-fn          main.app/init
+                      :output-dir       "app"
+                      :compiler-options {:infer-externs :auto}
+                      :devtools         {:autoload true
+                                         :preloads [shadow.expo.keep-awake]}}
+              ;;   :app2 {:target           :node-script
+              ;;          :main             main.app/init
+              ;;          :output-to        "./app2/script.js"
+              ;;          :output-dir       "app2"
+              ;;          :compiler-options {:infer-externs :auto}
+              ;;          :devtools         {:autoload true
+              ;;                             :preloads [shadow.expo.keep-awake]}}
+                }}
