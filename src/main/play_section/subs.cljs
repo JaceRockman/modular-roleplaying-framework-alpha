@@ -1,13 +1,30 @@
 (ns main.play-section.subs
   (:require
+   [clojure.data]
    [main.db]
    [main.helpers :as helpers]
+   [main.play-section.data :as data]
    [re-frame.core :as rf :refer [reg-sub]]))
+
+(defn deep-merge
+  "Recursively merges maps."
+  [& maps]
+  (letfn [(m [& xs]
+            (if (some #(and (map? %) (not (record? %))) xs)
+              (apply merge-with m xs)
+              (last xs)))]
+    (reduce m maps)))
 
 (reg-sub
  :db-diff
  (fn [db _]
-   (second (clojure.data/diff main.db/app-db db))))
+   (second (clojure.data/diff (-> main.db/app-db
+                                  (deep-merge data/rogue-data)
+                                  (deep-merge data/soldier-data)
+                                  (deep-merge data/paladin-data)
+                                  (deep-merge data/arcanist-data)
+                                  (deep-merge data/druid-data)
+                                  (deep-merge data/warlock-data))  db))))
 
 (reg-sub
  :characters

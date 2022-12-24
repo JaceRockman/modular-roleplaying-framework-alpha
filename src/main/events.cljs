@@ -3,14 +3,29 @@
    [re-frame.core :as rf :refer [reg-event-db reg-event-fx]]
    [main.db :as db :refer [app-db]]
    [main.play-section.events]
+   [main.play-section.data :as data]
    [main.rules-section.events]
    [main.world-section.events]))
 
+(defn deep-merge
+  "Recursively merges maps."
+  [& maps]
+  (letfn [(m [& xs]
+            (if (some #(and (map? %) (not (record? %))) xs)
+              (apply merge-with m xs)
+              (last xs)))]
+    (reduce m maps)))
 
 (reg-event-db
  :initialize-db
  (fn [_ _]
-   app-db))
+   (-> app-db 
+       (deep-merge data/rogue-data)
+       (deep-merge data/soldier-data)
+       (deep-merge data/paladin-data)
+       (deep-merge data/arcanist-data)
+       (deep-merge data/druid-data)
+       (deep-merge data/warlock-data))))
 
 (reg-event-db
  :set-style-mode

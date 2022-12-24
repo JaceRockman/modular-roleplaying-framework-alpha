@@ -17,7 +17,8 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/73262bc5-774e-49b7-9510-fbb9f6a995d4"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -28,6 +29,9 @@
     },
     "android": {
       "package": "avisindustries.mrfalpha"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }
